@@ -600,8 +600,8 @@ export default function SettingsBackupView({
         <form onSubmit={handleSaveBranding} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {/* System Naming Card */}
           <div className="glass-panel" id="system-naming-card">
-            <div className="panel-header">
-              <div className="panel-title">
+            <div className="panel-header" style={{ flexWrap: 'wrap', gap: 8 }}>
+              <div className="panel-title" style={{ flexWrap: 'wrap' }}>
                 <Type size={18} color="var(--accent-crimson)" />
                 <span>Global System Naming & Identity (Core Specification)</span>
               </div>
@@ -610,7 +610,7 @@ export default function SettingsBackupView({
               </span>
             </div>
 
-            <div className="form-grid-responsive" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+            <div className="form-grid-responsive">
               <div className="form-group">
                 <label style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>ERP System Name</label>
                 <input 
@@ -678,9 +678,9 @@ export default function SettingsBackupView({
                 />
               </div>
 
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <label style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div className="form-group full-width-span" style={{ gridColumn: 'span 2' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                  <label style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                     <Palette size={16} color="var(--accent-cyan)" />
                     <span>Work Stadium Theme Customization & Multiple-Choice Color Combinations</span>
                   </label>
@@ -757,12 +757,12 @@ export default function SettingsBackupView({
                     </span>
                   </div>
 
-                  <div className="color-combiner-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: 14, alignItems: 'center' }}>
+                  <div className="color-combiner-grid">
                     <div>
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700 }}>1. Base Theme Blueprint:</span>
                       <select
                         className="form-control"
-                        style={{ marginTop: 4, fontSize: '12px' }}
+                        style={{ marginTop: 4, fontSize: '12px', width: '100%' }}
                         value={mixerBase}
                         onChange={(e) => setMixerBase(e.target.value)}
                       >
@@ -780,7 +780,7 @@ export default function SettingsBackupView({
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700 }}>2. Accent Light Tone:</span>
                       <select
                         className="form-control"
-                        style={{ marginTop: 4, fontSize: '12px' }}
+                        style={{ marginTop: 4, fontSize: '12px', width: '100%' }}
                         value={mixerAccent}
                         onChange={(e) => setMixerAccent(e.target.value)}
                       >
@@ -793,11 +793,11 @@ export default function SettingsBackupView({
                       </select>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                    <div style={{ display: 'flex', gap: 8, width: '100%' }}>
                       <button
                         type="button"
                         className="btn-primary"
-                        style={{ fontSize: '11.5px', padding: '8px 14px', width: '100%', justifyContent: 'center' }}
+                        style={{ fontSize: '12px', padding: '10px 16px', width: '100%', justifyContent: 'center' }}
                         onClick={() => {
                           playSuccess();
                           setFormData({ ...formData, theme: mixerBase });
@@ -811,7 +811,7 @@ export default function SettingsBackupView({
                           });
                         }}
                       >
-                        <Sparkles size={13} />
+                        <Sparkles size={14} />
                         <span>Apply Color Combination</span>
                       </button>
                     </div>
@@ -828,9 +828,9 @@ export default function SettingsBackupView({
               <span>Custom Media Uploads & Branding Assets</span>
             </div>
 
-            <div className="form-grid-responsive" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            <div className="form-grid-responsive">
               {/* Organization Logo */}
-              <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', display: 'flex', gap: 16, alignItems: 'center' }}>
+              <div className="custom-media-card" style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', display: 'flex', gap: 16, alignItems: 'center' }}>
                 <div style={{ position: 'relative', width: 72, height: 72, flexShrink: 0 }}>
                   <img 
                     src={formData.logoUrl || '/anime/obito_avatar.jpg'} 
@@ -838,7 +838,7 @@ export default function SettingsBackupView({
                     style={{ width: '100%', height: '100%', borderRadius: 'var(--radius-md)', objectFit: 'cover', border: '2px solid var(--accent-crimson)' }}
                   />
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>Organization Logo</label>
                   <input 
                     type="file" 
@@ -860,7 +860,7 @@ export default function SettingsBackupView({
               </div>
 
               {/* Login Background Wallpaper */}
-              <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', display: 'flex', gap: 16, alignItems: 'center' }}>
+              <div className="custom-media-card" style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', display: 'flex', gap: 16, alignItems: 'center' }}>
                 <div style={{ position: 'relative', width: 72, height: 72, flexShrink: 0 }}>
                   <img 
                     src={formData.loginBgUrl || '/anime/kamui_banner.jpg'} 
@@ -868,7 +868,7 @@ export default function SettingsBackupView({
                     style={{ width: '100%', height: '100%', borderRadius: 'var(--radius-md)', objectFit: 'cover', border: '2px solid var(--accent-purple)' }}
                   />
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>Login Screen Wallpaper</label>
                   <input 
                     type="file" 
