@@ -362,59 +362,74 @@ export default function App() {
 
     hydrateFromSupabase();
 
-    // 2. Realtime WebSocket subscription for instant broadcasts across all sessions
-    const channel = supabase
-      .channel('erp-realtime-global')
+    const applyIncomingConfig = (update) => {
+      setCompanyConfig(prev => {
+        const nextLogo = update.logo_url 
+          ? `${update.logo_url.split('?')[0]}?t=${Date.now()}` 
+          : prev.logoUrl;
+        const nextBanner = update.banner_url 
+          ? `${update.banner_url.split('?')[0]}?t=${Date.now()}` 
+          : prev.bannerUrl;
+
+        return {
+          ...prev,
+          name: update.name ?? prev.name,
+          subtitle: update.subtitle ?? prev.subtitle,
+          leader: update.leader ?? prev.leader,
+          leaderTitle: update.leader_title ?? prev.leaderTitle,
+          currency: update.currency ?? prev.currency,
+          taxRate: update.tax_rate ?? prev.taxRate,
+          logoUrl: nextLogo,
+          bannerUrl: nextBanner,
+          loginBgUrl: update.login_bg_url ?? prev.loginBgUrl,
+          loginAvatarUrl: update.login_avatar_url ?? prev.loginAvatarUrl,
+          theme: update.theme ?? prev.theme,
+          tileNames: update.tile_names ? (typeof update.tile_names === 'string' ? JSON.parse(update.tile_names) : update.tile_names) : prev.tileNames,
+          moduleThemes: update.module_themes ? (typeof update.module_themes === 'string' ? JSON.parse(update.module_themes) : update.module_themes) : prev.moduleThemes,
+          splashConfig: update.splash_config ? (typeof update.splash_config === 'string' ? JSON.parse(update.splash_config) : update.splash_config) : prev.splashConfig,
+          teamModePermissions: update.team_mode_permissions ? (typeof update.team_mode_permissions === 'string' ? JSON.parse(update.team_mode_permissions) : update.team_mode_permissions) : prev.teamModePermissions
+        };
+      });
+
+      if (update.name) {
+        document.title = `${update.name} // Work Stadium ERP`;
+      }
+      if (update.theme) {
+        document.documentElement.setAttribute('data-theme', update.theme);
+      }
+    };
+
+    // 2. Realtime PostgreSQL Channel (CDC)
+    const postgresChannel = supabase
+      .channel('erp-realtime-postgres')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'company_config' },
         (payload) => {
           if (!isMounted || !payload.new) return;
-          console.log('[Supabase Realtime Push Received]:', payload.new);
-          const update = payload.new;
-
-          setCompanyConfig(prev => {
-            const nextLogo = update.logo_url 
-              ? `${update.logo_url.split('?')[0]}?t=${Date.now()}` 
-              : prev.logoUrl;
-            const nextBanner = update.banner_url 
-              ? `${update.banner_url.split('?')[0]}?t=${Date.now()}` 
-              : prev.bannerUrl;
-
-            return {
-              ...prev,
-              name: update.name ?? prev.name,
-              subtitle: update.subtitle ?? prev.subtitle,
-              leader: update.leader ?? prev.leader,
-              leaderTitle: update.leader_title ?? prev.leaderTitle,
-              currency: update.currency ?? prev.currency,
-              taxRate: update.tax_rate ?? prev.taxRate,
-              logoUrl: nextLogo,
-              bannerUrl: nextBanner,
-              loginBgUrl: update.login_bg_url ?? prev.loginBgUrl,
-              loginAvatarUrl: update.login_avatar_url ?? prev.loginAvatarUrl,
-              theme: update.theme ?? prev.theme,
-              tileNames: update.tile_names ? JSON.parse(update.tile_names) : prev.tileNames,
-              moduleThemes: update.module_themes ? JSON.parse(update.module_themes) : prev.moduleThemes,
-              splashConfig: update.splash_config ? JSON.parse(update.splash_config) : prev.splashConfig,
-              teamModePermissions: update.team_mode_permissions ? JSON.parse(update.team_mode_permissions) : prev.teamModePermissions
-            };
-          });
-
-          // Also update document title if name changed
-          if (update.name) {
-            document.title = `${update.name} // Work Stadium ERP`;
-          }
-          if (update.theme) {
-            document.documentElement.setAttribute('data-theme', update.theme);
-          }
+          console.log('[Postgres Realtime Event]:', payload.new);
+          applyIncomingConfig(payload.new);
         }
       )
       .subscribe();
 
+    // 3. Ultra-Low Latency Broadcast Channel (<100ms push directly across open sessions)
+    const broadcastChan = supabase
+      .channel('erp-sync-broadcast')
+      .on('broadcast', { event: 'state_mutation' }, (event) => {
+        if (!isMounted || !event.payload) return;
+        const { scope, data } = event.payload;
+        console.log('[Broadcast Event Received]:', scope);
+        if (scope === 'company_config' && data) {
+          applyIncomingConfig(data);
+        }
+      })
+      .subscribe();
+
     return () => {
       isMounted = false;
-      supabase.removeChannel(channel);
+      supabase.removeChannel(postgresChannel);
+      supabase.removeChannel(broadcastChan);
     };
   }, []);
 

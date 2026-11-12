@@ -13,11 +13,53 @@ export const supabase = isSupabaseConfigured
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       realtime: {
         params: {
-          eventsPerSecond: 10,
+          eventsPerSecond: 20,
         },
       },
     })
   : null;
+
+/**
+ * Universal broadcast channel for cross-device state synchronization
+ * Even when PostgreSQL tables are still syncing, WebSockets push state instantly.
+ */
+let broadcastChannel = null;
+
+export function getBroadcastChannel() {
+  if (!isSupabaseConfigured || !supabase) return null;
+  if (!broadcastChannel) {
+    broadcastChannel = supabase.channel('erp-sync-broadcast', {
+      config: { broadcast: { self: false } },
+    });
+    broadcastChannel.subscribe((status) => {
+      console.log(`[Supabase Broadcast Channel]: ${status}`);
+    });
+  }
+  return broadcastChannel;
+}
+
+/**
+ * Broadcast an immediate state change event to every active device/session
+ */
+export async function broadcastStateUpdate(scope, payload) {
+  const channel = getBroadcastChannel();
+  if (channel) {
+    try {
+      await channel.send({
+        type: 'broadcast',
+        event: 'state_mutation',
+        payload: {
+          scope,
+          data: payload,
+          timestamp: Date.now()
+        }
+      });
+      console.log(`[Broadcast Sent]: ${scope}`);
+    } catch (err) {
+      console.warn('[Broadcast Error]:', err);
+    }
+  }
+}
 
 /**
  * Upload branding assets (logos, avatars, wallpapers) to Supabase Storage with cache busting
@@ -34,7 +76,7 @@ export async function uploadBrandingAssetToSupabase(file, folder = 'branding') {
   const { data, error } = await supabase.storage
     .from('erp-assets')
     .upload(cleanFileName, file, {
-      cacheControl: '3600',
+      cacheControl: '0', // No cache on storage side
       upsert: true,
       contentType: file.type || 'image/png'
     });
@@ -92,9 +134,33 @@ export async function saveCompanyConfigToSupabase(config) {
       console.warn('[Supabase Config Save Error]:', error.message);
       return { ok: false, error: error.message };
     }
+
+    // Immediately trigger websocket broadcast to all other sessions
+    await broadcastStateUpdate('company_config', payload);
+
     return { ok: true, data };
   } catch (err) {
     console.warn('[Supabase Exception]:', err.message);
+    return { ok: false, error: err.message };
+  }
+}
+
+/**
+ * Persist collection (inventory, tasks, projects, etc.) to Supabase PostgreSQL & broadcast
+ */
+export async function syncCollectionToSupabase(table, items) {
+  if (!isSupabaseConfigured || !supabase || !Array.isArray(items)) return { ok: false };
+
+  try {
+    const { data, error } = await supabase
+      .from(table)
+      .upsert(items, { onConflict: 'id' });
+
+    if (!error) {
+      await broadcastStateUpdate(table, items);
+    }
+    return { ok: !error, error: error?.message };
+  } catch (err) {
     return { ok: false, error: err.message };
   }
 }
