@@ -19,11 +19,14 @@ dist-ssr
 .env.production
 .env*.local
 
-# SQLite Database (server generates this locally)
-data/*.sqlite
-data/*.sqlite-shm
-data/*.sqlite-wal
-data/
+# SQLite Database (server generates this locally in root /data folder)
+/data/
+/data/*.sqlite
+/data/*.sqlite-shm
+/data/*.sqlite-wal
+
+# Keep example env file tracked for deployment reference
+!.env.example
 
 # Uploaded media files (local only)
 uploads/
