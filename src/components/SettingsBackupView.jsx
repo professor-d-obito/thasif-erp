@@ -35,6 +35,7 @@ import {
 import { playChime, playSuccess } from '../utils/audio';
 import { GRADIENT_PRESETS, DEFAULT_MODULE_BACKGROUNDS } from '../utils/useModuleTheme';
 import { uploadObjectStorageFile } from '../utils/apiClient';
+import { uploadBrandingAssetToSupabase, isSupabaseConfigured, saveCompanyConfigToSupabase } from '../utils/supabaseClient';
 import CustomizableSplashLoader from './CustomizableSplashLoader';
 
 const DEFAULT_TILE_NAMES = {
@@ -155,12 +156,12 @@ export default function SettingsBackupView({
   const [resetStaffPasswordVal, setResetStaffPasswordVal] = useState('');
 
   // Save global branding & system naming
-  const handleSaveBranding = (e) => {
+  const handleSaveBranding = async (e) => {
     if (e) e.preventDefault();
     playSuccess();
 
-    setCompanyConfig(prev => ({
-      ...prev,
+    const updatedConfig = {
+      ...companyConfig,
       name: formData.name,
       subtitle: formData.subtitle,
       leader: formData.leader,
@@ -175,7 +176,14 @@ export default function SettingsBackupView({
       taxRate: Number(formData.taxRate) || 8.5,
       theme: formData.theme,
       tileNames: formData.tileNames
-    }));
+    };
+
+    setCompanyConfig(updatedConfig);
+
+    // Synchronize to Supabase Realtime if configured
+    if (isSupabaseConfigured) {
+      await saveCompanyConfigToSupabase(updatedConfig);
+    }
 
     // Update document title dynamically
     document.title = `${formData.name} // Crimson Protocol — ${formData.leader}`;
@@ -271,6 +279,26 @@ export default function SettingsBackupView({
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
+    // 1. Try Supabase Storage first if configured (ensures public CDN link accessible on all devices)
+    if (isSupabaseConfigured) {
+      try {
+        const publicUrlWithBust = await uploadBrandingAssetToSupabase(file, field);
+        setFormData(prev => ({ ...prev, [field]: publicUrlWithBust }));
+        playSuccess();
+        if (addAuditLog) {
+          addAuditLog({
+            user: formData.leader,
+            action: 'SUPABASE_STORAGE_UPLOAD',
+            details: `Uploaded '${file.name}' to Supabase Storage (${field})`
+          });
+        }
+        return;
+      } catch (err) {
+        console.warn('[Supabase Storage] Fallback triggered:', err.message);
+      }
+    }
+
+    // 2. Try Node/Express backend object storage if local server is active
     try {
       const uploadRes = await uploadObjectStorageFile(file, {
         entityType: 'branding',
@@ -294,7 +322,7 @@ export default function SettingsBackupView({
       console.warn('[Object Storage] Falling back to client base64 storage:', err);
     }
 
-    // Offline / Local fallback
+    // 3. Offline / Local Base64 fallback
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target.result;

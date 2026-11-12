@@ -38,6 +38,7 @@ import { playChime, playSuccess, playKamuiWarp } from './utils/audio';
 import { checkModulePermission } from './utils/routeGuards';
 import { validateErpBackup } from './utils/security';
 import { checkServerHealth, fetchBootstrapState, seedServerDatabase, syncErpStateToServer } from './utils/apiClient';
+import { supabase, isSupabaseConfigured } from './utils/supabaseClient';
 import { BellRing, AlertTriangle, CheckCircle, ShieldAlert, X, Clock, Users, Crown, LogOut } from 'lucide-react';
 
 const STORAGE_KEYS = {
@@ -315,6 +316,106 @@ export default function App() {
 
     hydrateFromRelationalDatabase();
     return () => { isMounted = false; };
+  }, []);
+
+  // Supabase Realtime Synchronization Channel (WebSocket Push < 150ms)
+  // Ensures any Super Admin updates (logos, company name, assets) immediately update all open tabs & devices
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    let isMounted = true;
+
+    // 1. Initial hydration from Supabase
+    const hydrateFromSupabase = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('company_config')
+          .select('*')
+          .eq('id', 'default')
+          .maybeSingle();
+
+        if (data && !error && isMounted) {
+          setCompanyConfig(prev => ({
+            ...prev,
+            name: data.name || prev.name,
+            subtitle: data.subtitle || prev.subtitle,
+            leader: data.leader || prev.leader,
+            leaderTitle: data.leader_title || prev.leaderTitle,
+            currency: data.currency || prev.currency,
+            taxRate: data.tax_rate ?? prev.taxRate,
+            logoUrl: data.logo_url || prev.logoUrl,
+            bannerUrl: data.banner_url || prev.bannerUrl,
+            loginBgUrl: data.login_bg_url || prev.loginBgUrl,
+            loginAvatarUrl: data.login_avatar_url || prev.loginAvatarUrl,
+            theme: data.theme || prev.theme,
+            tileNames: data.tile_names ? JSON.parse(data.tile_names) : prev.tileNames,
+            moduleThemes: data.module_themes ? JSON.parse(data.module_themes) : prev.moduleThemes,
+            splashConfig: data.splash_config ? JSON.parse(data.splash_config) : prev.splashConfig,
+            teamModePermissions: data.team_mode_permissions ? JSON.parse(data.team_mode_permissions) : prev.teamModePermissions
+          }));
+          console.log('[Supabase Realtime] Hydrated global config from Supabase.');
+        }
+      } catch (err) {
+        console.warn('[Supabase Realtime Hydration]:', err.message);
+      }
+    };
+
+    hydrateFromSupabase();
+
+    // 2. Realtime WebSocket subscription for instant broadcasts across all sessions
+    const channel = supabase
+      .channel('erp-realtime-global')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'company_config' },
+        (payload) => {
+          if (!isMounted || !payload.new) return;
+          console.log('[Supabase Realtime Push Received]:', payload.new);
+          const update = payload.new;
+
+          setCompanyConfig(prev => {
+            const nextLogo = update.logo_url 
+              ? `${update.logo_url.split('?')[0]}?t=${Date.now()}` 
+              : prev.logoUrl;
+            const nextBanner = update.banner_url 
+              ? `${update.banner_url.split('?')[0]}?t=${Date.now()}` 
+              : prev.bannerUrl;
+
+            return {
+              ...prev,
+              name: update.name ?? prev.name,
+              subtitle: update.subtitle ?? prev.subtitle,
+              leader: update.leader ?? prev.leader,
+              leaderTitle: update.leader_title ?? prev.leaderTitle,
+              currency: update.currency ?? prev.currency,
+              taxRate: update.tax_rate ?? prev.taxRate,
+              logoUrl: nextLogo,
+              bannerUrl: nextBanner,
+              loginBgUrl: update.login_bg_url ?? prev.loginBgUrl,
+              loginAvatarUrl: update.login_avatar_url ?? prev.loginAvatarUrl,
+              theme: update.theme ?? prev.theme,
+              tileNames: update.tile_names ? JSON.parse(update.tile_names) : prev.tileNames,
+              moduleThemes: update.module_themes ? JSON.parse(update.module_themes) : prev.moduleThemes,
+              splashConfig: update.splash_config ? JSON.parse(update.splash_config) : prev.splashConfig,
+              teamModePermissions: update.team_mode_permissions ? JSON.parse(update.team_mode_permissions) : prev.teamModePermissions
+            };
+          });
+
+          // Also update document title if name changed
+          if (update.name) {
+            document.title = `${update.name} // Work Stadium ERP`;
+          }
+          if (update.theme) {
+            document.documentElement.setAttribute('data-theme', update.theme);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Live Polling: Re-fetch from SQL server every 15 seconds so all visitors

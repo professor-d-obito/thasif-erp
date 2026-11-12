@@ -13,6 +13,7 @@
     "tunnel:cloud": "npx cloudflared tunnel --url http://localhost:5173"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
     "better-sqlite3": "^13.0.3",
     "cors": "^2.8.6",
     "dotenv": "^18.0.9",
