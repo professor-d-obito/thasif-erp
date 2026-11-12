@@ -214,9 +214,9 @@ export default function RolesAndAuditView({
   return (
     <div className="page-container" id="roles-audit-governance-page">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+      <div className="view-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 900, color: '#ffffff' }}>
               Governance & Granular RBAC Control
             </h2>
@@ -230,7 +230,7 @@ export default function RolesAndAuditView({
         </div>
 
         {/* Sub-tab switcher */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div className="sub-tab-nav-scroll" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {[
             { id: 'roles', label: 'Granular RBAC Matrix' },
             { id: 'staff', label: `Staff Role Assignment (${staffAccounts.length})` },
@@ -277,7 +277,7 @@ export default function RolesAndAuditView({
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div className="sub-tab-nav-scroll" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Simulate Active Session:</span>
                 {Object.keys(rolePermissions).map(roleKey => (
                   <button
@@ -316,7 +316,7 @@ export default function RolesAndAuditView({
           {/* Granular Permissions Editor Panel for Selected Role */}
           <div className="glass-panel">
             <div className="panel-header" style={{ flexWrap: 'wrap', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', width: '100%' }}>
                 <div className="panel-title">
                   <Lock size={18} color="var(--accent-purple)" />
                   <span>Configuring Permissions for Role:</span>

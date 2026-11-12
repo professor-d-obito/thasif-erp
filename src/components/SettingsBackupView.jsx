@@ -435,9 +435,9 @@ export default function SettingsBackupView({
   return (
     <div className="page-container" id="settings-backup-page">
       {/* Top Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+      <div className="view-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 900, color: '#ffffff' }}>
               Super Admin Customization & Governance Studio
             </h2>
@@ -452,7 +452,7 @@ export default function SettingsBackupView({
 
         {/* Section Navigation Tabs */}
         {!isStaff && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className="sub-tab-nav-scroll" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button
               id="settings-tab-branding-btn"
               className={`btn-secondary ${activeTab === 'branding' ? 'active' : ''}`}
@@ -610,7 +610,7 @@ export default function SettingsBackupView({
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+            <div className="form-grid-responsive" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
               <div className="form-group">
                 <label style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>ERP System Name</label>
                 <input 
@@ -757,7 +757,7 @@ export default function SettingsBackupView({
                     </span>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: 14, alignItems: 'center' }}>
+                  <div className="color-combiner-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: 14, alignItems: 'center' }}>
                     <div>
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700 }}>1. Base Theme Blueprint:</span>
                       <select
@@ -828,7 +828,7 @@ export default function SettingsBackupView({
               <span>Custom Media Uploads & Branding Assets</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            <div className="form-grid-responsive" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
               {/* Organization Logo */}
               <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', display: 'flex', gap: 16, alignItems: 'center' }}>
                 <div style={{ position: 'relative', width: 72, height: 72, flexShrink: 0 }}>

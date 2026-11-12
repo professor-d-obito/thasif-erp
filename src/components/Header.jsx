@@ -198,7 +198,7 @@ const ACCENT_OPTIONS = [
   return (
     <header className="app-header" id="app-top-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
       {/* 1. LEFT TOP: Three-Dot Menu Launcher for Hidden Stadium Navigation */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flexShrink: 1 }}>
         <button 
           id="stadium-menu-toggle-btn"
           className="stadium-menu-dot-btn"
@@ -218,28 +218,29 @@ const ACCENT_OPTIONS = [
         </button>
 
         <div 
-          style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', minWidth: 0, overflow: 'hidden' }}
           onClick={() => setActiveTab('dashboard')}
           title="Return to Stadium Operations"
         >
           <img 
             src={companyConfig.logoUrl || '/stadium_logo.svg'} 
             alt="Work Stadium Logo" 
-            style={{ width: 30, height: 30, borderRadius: '6px', objectFit: 'contain' }}
+            style={{ width: 28, height: 28, borderRadius: '6px', objectFit: 'contain', flexShrink: 0 }}
           />
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
             <span style={{ 
               fontFamily: 'var(--font-display)', 
               fontWeight: 800, 
-              fontSize: '14.5px', 
+              fontSize: '13.5px', 
               color: 'var(--text-primary)', 
               lineHeight: 1.15,
-              letterSpacing: '0.3px',
+              letterSpacing: '0.2px',
               display: 'flex',
               alignItems: 'center',
-              gap: 8
+              gap: 6,
+              minWidth: 0
             }}>
-              <span className="brand-title-text" style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span className="brand-title-text" style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {companyConfig.name || 'VERTEX WORK STADIUM ERP'}
               </span>
               <span className="stadium-ops-badge" style={{ 
@@ -257,11 +258,14 @@ const ACCENT_OPTIONS = [
               </span>
             </span>
             <span style={{ 
-              fontSize: '9.5px', 
+              fontSize: '9px', 
               color: 'var(--text-muted)', 
               fontFamily: 'var(--font-body)', 
               fontWeight: 500,
-              letterSpacing: '0.2px'
+              letterSpacing: '0.2px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
             }}>
               {isStaff ? `Staff Workspace // ${currentStaffAccount?.name || 'Operative'}` : 'Executive Stadium Command'}
             </span>
