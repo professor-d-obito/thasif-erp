@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://gwatgigfzneocwlkhekr.supabase.co';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ddqlxhbqpivdsrsknwjy.supabase.co';
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_qg5Aj0ZWARpyFRVEBtXRRg_rTB6WM3N';
 
 export const isSupabaseConfigured = Boolean(
